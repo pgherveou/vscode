@@ -31,7 +31,7 @@ function shouldSpawnCliProcess(argv: NativeParsedArgs): boolean {
 }
 
 function createFileName(dir: string, prefix: string): string {
-	return join(dir, prefix + '-' + Math.random().toString(16).slice(-4));
+	return join(dir, `${prefix}-${Math.random().toString(16).slice(-4)}`);
 }
 
 interface IMainCli {
