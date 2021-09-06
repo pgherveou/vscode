@@ -12,7 +12,7 @@ const INITIALIZE = '$initialize';
 
 export interface IWorker extends IDisposable {
 	getId(): number;
-	postMessage(message: any, transfer: ArrayBuffer[]): void;
+	postMessage(message: any, transfer: Transferable[]): void;
 }
 
 export interface IWorkerCallback {
@@ -34,6 +34,10 @@ export function logOnceWebWorkerWarning(err: any): void {
 		console.warn('Could not create web worker(s). Falling back to loading web worker code in main thread, which might cause UI freezes. Please see https://github.com/microsoft/monaco-editor#faq');
 	}
 	console.warn(err.message);
+}
+
+function isTransferable(obj: unknown): obj is Transferable {
+	return obj instanceof ArrayBuffer || obj instanceof MessagePort || obj instanceof ImageBitmap || obj instanceof OffscreenCanvas
 }
 
 interface IMessage {
@@ -160,17 +164,17 @@ class SimpleWorkerProtocol {
 	}
 
 	private _send(msg: IRequestMessage | IReplyMessage): void {
-		let transfer: ArrayBuffer[] = [];
+		let transfer: Transferable[] = [];
 		if (msg.req) {
 			const m = <IRequestMessage>msg;
 			for (let i = 0; i < m.args.length; i++) {
-				if (m.args[i] instanceof ArrayBuffer) {
+				if (isTransferable(m.args[i])) {
 					transfer.push(m.args[i]);
 				}
 			}
 		} else {
 			const m = <IReplyMessage>msg;
-			if (m.res instanceof ArrayBuffer) {
+			if (isTransferable(m.res)) {
 				transfer.push(m.res);
 			}
 		}
